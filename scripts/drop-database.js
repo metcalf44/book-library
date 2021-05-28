@@ -29,6 +29,7 @@ const dropDb = async () => {
             DB_PASSWORD,
             DB_NAME,
             DB_USER,
+            DB_HOST,
             DB_PORT,
         })
         console.log(err)

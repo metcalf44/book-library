@@ -1,10 +1,11 @@
 
 const express = require('express');
 const app = express();
-app.use(express.json());
 
-app.get('/', (req, res) => {
-    res.status(200).send('hello world');
-});
+const readerRouter = require('./routes/reader');
+
+app.use(express.json());
+app.use(readerRouter);
+
 
 module.exports = app;

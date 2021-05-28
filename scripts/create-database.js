@@ -6,7 +6,7 @@ const envFile = args === 'test' ? '../.env.test' : '../.env';
 
 require('dotenv').config({
     path: path.join(__dirname, envFile),
-})
+});
 const { DB_PASSWORD, DB_NAME, DB_USER, DB_HOST, DB_PORT } = process.env;
 
 const setUpDatabase = async () => {
@@ -19,7 +19,6 @@ const setUpDatabase = async () => {
         });
 
         await db.query(`CREATE DATABASE IF NOT EXISTS ${DB_NAME}`);
-        await db.query(`USE ${DB_NAME}`);
         
         
         db.close();
