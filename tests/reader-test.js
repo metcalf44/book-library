@@ -16,33 +16,73 @@ describe('/readers', () => {
             Reader.create({
                 name: 'Elizabeth Bennet',
                 email: 'future_ms_darcy@gmail.com',
+                password: 'mrDarcy19'
             }),
             Reader.create({
                 name: 'Arya Stark',
-                email: 'vmorgul@me.com'
+                email: 'vmorgul@me.com',
+                password: '123456'
             }),
             Reader.create({
                 name: 'Lyra Belacqua',
                 email: 'darknorth123@msn.org',
+                password: 'PassWord'
             }),
         ]);
         readers = await Reader.findAll();
     });
 
+    describe('POST /readers', () => {
+        it('returns a 409 error if the email has already been used', async () => {
+            const response = await request(app).post('/readers').send({
+                name: 'Elizabeth Bennet',
+                email: 'future_ms_darcy@gmail.com',
+                password: 'mrDarcy19'
+            });
+
+            expect(response.status).to.equal(409);
+            expect(response.body.error).to.equal(`the email future_ms_darcy@gmail.com is already being used`)
+        });
+    }),
+
     describe('with no records in the database', () => {
         describe('POST /readers', () => {
             it('creates a new reader in the database', async () => {
                 const response = await request(app).post('/readers').send({
-                    name: 'Elizabeth Bennet',
-                    email: 'future_ms_darcy@gmail.com',
+                    name: 'Ernie',
+                    email: 'ernie@gmail.com',
+                    password: 'ernie1234'
                 });
+
                 const newReaderRecord = await Reader.findByPk(response.body.id, {
                     raw: true
                 });
+
                 expect(response.status).to.equal(201);
-                expect(response.body.name).to.equal('Elizabeth Bennet');
-                expect(newReaderRecord.name).to.equal('Elizabeth Bennet');
-                expect(newReaderRecord.email).to.equal('future_ms_darcy@gmail.com');
+                expect(response.body.name).to.equal('Ernie');
+                
+                expect(newReaderRecord.name).to.equal('Ernie');
+                expect(newReaderRecord.email).to.equal('ernie@gmail.com');
+                expect(newReaderRecord.password).to.equal('ernie1234');
+            });
+            
+            it('returns a 400 error if the field is null', async () => {
+                const response = await request(app).post('/readers').send({
+                    name: 'Elizabeth Bennet',
+                    email: 'future_ms_darcy@gmail.com',
+                });
+                expect(response.status).to.equal(400);
+                expect(response.body.error).to.equal('Please check for missing text') 
+            });
+
+            it(`returns a 401 error if the password isn't between 8 and 16 characters`, async () => {
+                const response = await request(app).post('/readers').send({
+                    name: 'Arya Stark',
+                    email: 'vmorgul@me.com',
+                    password: '123456'
+                });
+                expect(response.status).to.equal(401);
+                expect(response.body.error).to.equal('Password must be between 8 - 16 characters');
             });
         });
     });
@@ -71,6 +111,7 @@ describe('/readers', () => {
             expect(response.status).to.equal(200);
             expect(response.body.name).to.equal(reader.name);
             expect(response.body.email).to.equal(reader.email);
+            expect(response.body.password).to.equal(reader.password)
         });
 
         it('returns a 404 if the reader does not exist', async () => {
@@ -109,7 +150,9 @@ describe('/readers', () => {
         it('deletes reader record by id', async () => {
             const reader = readers[0];
             const response = await request(app).delete(`/readers/${reader.id}`);
-            const deletedReader = await Reader.findByPk(reader.id, { raw: true })
+            const deletedReader = await Reader.findByPk(reader.id, { 
+                raw: true 
+            })
 
             expect(response.status).to.equal(204);
             expect(deletedReader).to.equal(null);
